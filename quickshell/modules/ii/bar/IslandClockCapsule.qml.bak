@@ -1,0 +1,567 @@
+import qs
+import qs.modules.common
+import qs.modules.common.functions
+import qs.modules.common.widgets
+import qs.services
+import QtQuick
+import QtQuick.Layouts
+import Quickshell
+import Quickshell.Hyprland
+
+Item {
+    id: root
+    implicitWidth: 570
+    implicitHeight: 435
+    width: 570
+    height: 435
+    clip: true
+
+    // Custom cursive font loader for quotes and greeting
+    FontLoader {
+        id: caveatFont
+        source: "file:///home/x11/.local/share/fonts/Caveat.ttf"
+    }
+
+    // Dynamic Time & Date
+    readonly property var curDate: DateTime.clock.date
+    readonly property string hourStr: DateTime.hourStr
+    readonly property string minStr: DateTime.minuteStr
+    readonly property string apStr: Qt.locale().toString(root.curDate, "AP")
+    readonly property string dateStr: Qt.locale().toString(root.curDate, "dddd, d MMMM")
+
+    // Dynamic Greeting
+    readonly property int currentHour: DateTime.hour24
+    readonly property string greetingLine1: "Good"
+    readonly property string greetingLine2: currentHour < 12 ? "Morning"
+        : currentHour < 17 ? "Afternoon"
+        : "Evening"
+    readonly property string userName: "Asif"
+
+    // Background: current wallpaper (shaped into the island)
+    Image {
+        id: bgArt
+        anchors.fill: parent
+        source: {
+            const wp = Config.options.background.wallpaperPath;
+            const isVideo = wp.endsWith(".mp4") || wp.endsWith(".webm") || wp.endsWith(".mkv") || wp.endsWith(".avi") || wp.endsWith(".mov");
+            return Qt.resolvedUrl(isVideo ? Config.options.background.thumbnailPath : wp);
+        }
+        fillMode: Image.PreserveAspectCrop
+        smooth: true
+        mipmap: true
+    }
+
+    // Dark overlay for text readability
+    Rectangle {
+        anchors.fill: parent
+        color: Qt.rgba(0, 0, 0, 0.35)
+    }
+
+    // Glass reflection & soft glowing border
+    Rectangle {
+        anchors.fill: parent
+        radius: 28
+        color: "transparent"
+        border.width: 1.5
+        border.color: ColorUtils.transparentize("#f472b6", 0.45)
+    }
+
+    // ==========================================
+    // TOP LEFT: TIME, DATE, AND MOTIVATIONAL QUOTE
+    // ==========================================
+    ColumnLayout {
+        anchors {
+            top: parent.top
+            left: parent.left
+            topMargin: 24
+            leftMargin: 34
+        }
+        spacing: 2
+
+        // Clock: "07:26 AM"
+        RowLayout {
+            spacing: 0
+
+            Text {
+                text: root.hourStr + ":"
+                font.family: Fonts?.fontName ?? "SF Pro Rounded, Outfit, Inter, sans-serif"
+                font.pixelSize: 56
+                font.weight: Font.Normal
+                color: "#ffffff"
+            }
+
+            Text {
+                text: root.minStr
+                font.family: Fonts?.fontName ?? "SF Pro Rounded, Outfit, Inter, sans-serif"
+                font.pixelSize: 56
+                font.weight: Font.Normal
+                color: "#f472b6"
+            }
+
+            Text {
+                text: root.apStr
+                Layout.alignment: Qt.AlignBottom
+                Layout.bottomMargin: 8
+                Layout.leftMargin: 6
+                font.family: Fonts?.fontName ?? "SF Pro Rounded, Outfit, Inter, sans-serif"
+                font.pixelSize: 18
+                font.weight: Font.DemiBold
+                color: "#f472b6"
+            }
+        }
+
+        // Date: "Saturday, 14 September"
+        Text {
+            text: root.dateStr
+            font.family: Fonts?.fontName ?? "SF Pro, Outfit, Inter, sans-serif"
+            font.pixelSize: 14
+            font.weight: Font.Medium
+            color: "#ffffff"
+        }
+
+        Item { height: 6 }
+
+        // Heart divider: "—— ♥ ——"
+        RowLayout {
+            spacing: 6
+
+            Rectangle {
+                width: 32
+                height: 1
+                color: ColorUtils.transparentize("#f472b6", 0.5)
+            }
+
+            Text {
+                text: "♥"
+                font.pixelSize: 10
+                color: "#f472b6"
+            }
+
+            Rectangle {
+                width: 32
+                height: 1
+                color: ColorUtils.transparentize("#f472b6", 0.5)
+            }
+        }
+
+        Item { height: 4 }
+
+        // Cursive quote: "A\nBetter\nYou Today ♡"
+        ColumnLayout {
+            spacing: -6
+
+            Text {
+                text: "A"
+                font.family: caveatFont.status === FontLoader.Ready ? caveatFont.name : "Caveat, cursive"
+                font.pixelSize: 24
+                font.weight: Font.Bold
+                color: "#fbcfe8"
+            }
+            Text {
+                text: "Better"
+                font.family: caveatFont.status === FontLoader.Ready ? caveatFont.name : "Caveat, cursive"
+                font.pixelSize: 24
+                font.weight: Font.Bold
+                color: "#fbcfe8"
+            }
+            Text {
+                text: "You Today ♡"
+                font.family: caveatFont.status === FontLoader.Ready ? caveatFont.name : "Caveat, cursive"
+                font.pixelSize: 24
+                font.weight: Font.Bold
+                color: "#fbcfe8"
+            }
+        }
+
+        Item { height: 4 }
+
+        // Subtitle: "Small steps big changes."
+        Text {
+            text: "Small steps\nbig changes."
+            font.family: Fonts?.fontName ?? "SF Pro, Outfit, Inter, sans-serif"
+            font.pixelSize: 11
+            lineHeight: 1.15
+            color: "#e2e8f0"
+        }
+    }
+
+    // ==========================================
+    // TOP RIGHT: GREETING "Good Morning Asif ♡"
+    // ==========================================
+    ColumnLayout {
+        anchors {
+            top: parent.top
+            right: parent.right
+            topMargin: 26
+            rightMargin: 34
+        }
+        spacing: -6
+
+        Text {
+            text: root.greetingLine1
+            horizontalAlignment: Text.AlignRight
+            Layout.alignment: Qt.AlignRight
+            font.family: caveatFont.status === FontLoader.Ready ? caveatFont.name : "Caveat, cursive"
+            font.pixelSize: 32
+            font.weight: Font.Bold
+            color: "#ffffff"
+        }
+
+        Text {
+            text: root.greetingLine2
+            horizontalAlignment: Text.AlignRight
+            Layout.alignment: Qt.AlignRight
+            font.family: caveatFont.status === FontLoader.Ready ? caveatFont.name : "Caveat, cursive"
+            font.pixelSize: 32
+            font.weight: Font.Bold
+            color: "#ffffff"
+        }
+
+        Text {
+            text: root.userName + " ♡"
+            horizontalAlignment: Text.AlignRight
+            Layout.alignment: Qt.AlignRight
+            font.family: caveatFont.status === FontLoader.Ready ? caveatFont.name : "Caveat, cursive"
+            font.pixelSize: 30
+            font.weight: Font.Bold
+            color: "#ffffff"
+        }
+    }
+
+    // ==========================================
+    // ACTION TIMERS (allows Island to close cleanly before opening panels)
+    // ==========================================
+    Timer {
+        id: openScreenshotTimer
+        interval: 140
+        repeat: false
+        onTriggered: {
+            Quickshell.execDetached(["qs", "-c", "end4-pC", "ipc", "call", "region", "screenshot"])
+        }
+    }
+
+    Timer {
+        id: openOcrTimer
+        interval: 140
+        repeat: false
+        onTriggered: {
+            Quickshell.execDetached(["qs", "-c", "end4-pC", "ipc", "call", "region", "ocr"])
+        }
+    }
+
+    Timer {
+        id: openWallpaperTimer
+        interval: 140
+        repeat: false
+        onTriggered: {
+            if (Config?.options?.wallpaperSelector?.useSystemFileDialog) {
+                Wallpapers.openFallbackPicker(Appearance.m3colors.darkmode)
+            } else {
+                GlobalStates.wallpaperSelectorOpen = true
+            }
+        }
+    }
+
+    Timer {
+        id: openSessionTimer
+        interval: 100
+        repeat: false
+        onTriggered: {
+            GlobalStates.sessionOpen = true
+        }
+    }
+
+    // ==========================================
+    // BOTTOM CENTER: 4 UTILITY DOCK
+    // ==========================================
+    Item {
+        id: dockContainer
+        z: 20
+        anchors {
+            bottom: parent.bottom
+            bottomMargin: 32
+            horizontalCenter: parent.horizontalCenter
+        }
+        width: 350
+        height: 94
+
+        Row {
+            anchors.centerIn: parent
+            spacing: 24
+
+            // 1. Freeze Screenshot
+            Item {
+                width: 68
+                height: 90
+
+                Column {
+                    anchors.top: parent.top
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    spacing: 5
+
+                    Rectangle {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: 58
+                        height: 58
+                        radius: 17
+                        color: btnMouse1.pressed ? ColorUtils.transparentize("#f472b6", 0.45)
+                            : btnMouse1.containsMouse ? ColorUtils.transparentize("#f472b6", 0.22)
+                            : "transparent"
+                        border.width: btnMouse1.containsMouse ? 1.5 : 0
+                        border.color: "#f472b6"
+                        scale: btnMouse1.pressed ? 0.92 : (btnMouse1.containsMouse ? 1.06 : 1.0)
+
+                        Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
+                        Behavior on color { ColorAnimation { duration: 150 } }
+
+                        MaterialSymbol {
+                            anchors.centerIn: parent
+                            text: "crop_free"
+                            iconSize: 30
+                            color: "#ffffff"
+                        }
+                    }
+
+                    Item {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: 68
+                        height: 24
+
+                        Text {
+                            anchors.top: parent.top
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "Freeze\nScreenshot"
+                            horizontalAlignment: Text.AlignHCenter
+                            font.family: Fonts?.fontName ?? "SF Pro, Outfit, Inter, sans-serif"
+                            font.pixelSize: 10
+                            font.weight: Font.Medium
+                            lineHeight: 0.95
+                            color: "#ffffff"
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: btnMouse1
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        GlobalStates.showIslandClock = false
+                        openScreenshotTimer.restart()
+                    }
+                }
+            }
+
+            // 2. OCR
+            Item {
+                width: 68
+                height: 90
+
+                Column {
+                    anchors.top: parent.top
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    spacing: 5
+
+                    Rectangle {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: 58
+                        height: 58
+                        radius: 17
+                        color: btnMouse2.pressed ? ColorUtils.transparentize("#f472b6", 0.45)
+                            : btnMouse2.containsMouse ? ColorUtils.transparentize("#f472b6", 0.22)
+                            : "transparent"
+                        border.width: btnMouse2.containsMouse ? 1.5 : 0
+                        border.color: "#f472b6"
+                        scale: btnMouse2.pressed ? 0.92 : (btnMouse2.containsMouse ? 1.06 : 1.0)
+
+                        Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
+                        Behavior on color { ColorAnimation { duration: 150 } }
+
+                        MaterialSymbol {
+                            anchors.centerIn: parent
+                            text: "document_scanner"
+                            iconSize: 30
+                            color: "#ffffff"
+                        }
+                    }
+
+                    Item {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: 68
+                        height: 24
+
+                        Text {
+                            anchors.top: parent.top
+                            anchors.topMargin: 4
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "OCR"
+                            horizontalAlignment: Text.AlignHCenter
+                            font.family: Fonts?.fontName ?? "SF Pro, Outfit, Inter, sans-serif"
+                            font.pixelSize: 10
+                            font.weight: Font.Medium
+                            color: "#ffffff"
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: btnMouse2
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        GlobalStates.showIslandClock = false
+                        openOcrTimer.restart()
+                    }
+                }
+            }
+
+            // 3. Wallpaper
+            Item {
+                width: 68
+                height: 90
+
+                Column {
+                    anchors.top: parent.top
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    spacing: 5
+
+                    Rectangle {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: 58
+                        height: 58
+                        radius: 17
+                        color: btnMouse3.pressed ? ColorUtils.transparentize("#f472b6", 0.45)
+                            : btnMouse3.containsMouse ? ColorUtils.transparentize("#f472b6", 0.22)
+                            : "transparent"
+                        border.width: btnMouse3.containsMouse ? 1.5 : 0
+                        border.color: "#f472b6"
+                        scale: btnMouse3.pressed ? 0.92 : (btnMouse3.containsMouse ? 1.06 : 1.0)
+
+                        Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
+                        Behavior on color { ColorAnimation { duration: 150 } }
+
+                        MaterialSymbol {
+                            anchors.centerIn: parent
+                            text: "image"
+                            iconSize: 30
+                            color: "#ffffff"
+                        }
+                    }
+
+                    Item {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: 68
+                        height: 24
+
+                        Text {
+                            anchors.top: parent.top
+                            anchors.topMargin: 4
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "Wallpaper"
+                            horizontalAlignment: Text.AlignHCenter
+                            font.family: Fonts?.fontName ?? "SF Pro, Outfit, Inter, sans-serif"
+                            font.pixelSize: 10
+                            font.weight: Font.Medium
+                            color: "#ffffff"
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: btnMouse3
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        GlobalStates.showIslandClock = false
+                        openWallpaperTimer.restart()
+                    }
+                }
+            }
+
+            // 4. Shutdown
+            Item {
+                width: 68
+                height: 90
+
+                Column {
+                    anchors.top: parent.top
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    spacing: 5
+
+                    Rectangle {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: 58
+                        height: 58
+                        radius: 17
+                        color: btnMouse4.pressed ? ColorUtils.transparentize("#f472b6", 0.45)
+                            : btnMouse4.containsMouse ? ColorUtils.transparentize("#f472b6", 0.25)
+                            : "transparent"
+                        border.width: btnMouse4.containsMouse ? 1.5 : 0
+                        border.color: "#f472b6"
+                        scale: btnMouse4.pressed ? 0.92 : (btnMouse4.containsMouse ? 1.06 : 1.0)
+
+                        Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
+                        Behavior on color { ColorAnimation { duration: 150 } }
+
+                        MaterialSymbol {
+                            anchors.centerIn: parent
+                            text: "power_settings_new"
+                            iconSize: 30
+                            color: btnMouse4.containsMouse ? "#ffffff" : "#f472b6"
+                        }
+                    }
+
+                    Item {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: 68
+                        height: 24
+
+                        Text {
+                            anchors.top: parent.top
+                            anchors.topMargin: 4
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "Shutdown"
+                            horizontalAlignment: Text.AlignHCenter
+                            font.family: Fonts?.fontName ?? "SF Pro, Outfit, Inter, sans-serif"
+                            font.pixelSize: 10
+                            font.weight: Font.Medium
+                            color: "#ffffff"
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: btnMouse4
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        GlobalStates.showIslandClock = false
+                        openSessionTimer.restart()
+                    }
+                }
+            }
+        }
+    }
+
+    // ==========================================
+    // BOTTOM FOOTER: "—— STAY PRODUCTIVE ♡ ——"
+    // ==========================================
+    Text {
+        id: stayProductiveText
+        anchors {
+            bottom: parent.bottom
+            bottomMargin: 12
+            horizontalCenter: parent.horizontalCenter
+        }
+        text: "——   S T A Y   P R O D U C T I V E   ♡   ——"
+        font.family: Fonts?.fontName ?? "SF Pro, Outfit, Inter, sans-serif"
+        font.pixelSize: 10
+        font.letterSpacing: 2.8
+        font.weight: Font.Medium
+        color: ColorUtils.transparentize("#e2e8f0", 0.8)
+    }
+}

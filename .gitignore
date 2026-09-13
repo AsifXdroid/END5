@@ -1,0 +1,15 @@
+# Quickshell cache
+*.qslog
+*.qstr
+cache/
+
+# Hyprland runtime
+*.lock
+*.pid
+hyprland.conf.old
+hypridle.conf.old
+hyprlock.conf.old
+
+# OS
+.DS_Store
+Thumbs.db

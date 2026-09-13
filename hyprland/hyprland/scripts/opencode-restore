@@ -1,0 +1,19 @@
+#!/bin/bash
+# Restore the last OpenCode session or launch a new one
+WID=$(hyprctl clients -j 2>/dev/null | python3 -c "
+import sys, json
+try:
+    clients = json.load(sys.stdin)
+    for c in clients:
+        if c.get('class') == 'kitty':
+            print(c.get('address'))
+            break
+except Exception:
+    pass
+" 2>/dev/null)
+
+if [ -n "$WID" ]; then
+    hyprctl eval "hl.dsp.focus({ window = '$WID' })" 2>/dev/null
+else
+    kitty -1 opencode &
+fi
